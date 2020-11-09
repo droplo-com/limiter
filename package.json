@@ -1,0 +1,35 @@
+{
+  "name": "@etk/limiter",
+  "version": "0.1.0",
+  "description": "Limiter",
+  "main": "./index.js",
+  "scripts": {
+    "test": "npx mocha",
+    "coverage": "nyc --reporter=html npm test",
+    "docs": "./node_modules/.bin/jsdoc -c ./.jsdocrc -r -R ./README.md  -d ../../gh-pages/tasqu/ src/",
+    "codeclimate": "docker run --rm --env CODECLIMATE_CODE=\"$PWD\" --volume \"$PWD\":/code --volume /var/run/docker.sock:/var/run/docker.sock --volume /tmp/cc:/tmp/cc codeclimate/codeclimate analyze -f html > codeclimate.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/droplo-com/limiter"
+  },
+  "keywords": [],
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "author": "Michał Żaloudik <ponury.kostek@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/droplo-com/limiter/issues"
+  },
+  "homepage": "https://github.com/droplo-com/limiter#readme",
+  "devDependencies": {
+    "benchmark": "^2.1.4",
+    "coveralls": "^3.1.0",
+    "ink-docstrap": "^1.3.2",
+    "nyc": "^15.1.0",
+    "jsdoc": "^3.6.6",
+    "mocha": "^8.2.1",
+    "mocha-lcov-reporter": "^1.3.0"
+  },
+  "dependencies": {}
+}
