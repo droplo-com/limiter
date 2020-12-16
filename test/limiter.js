@@ -63,4 +63,71 @@ describe("Limiter", () => {
 			})
 		]);
 	});
+	it("should do jobs in priority order", async () => {
+		const expectedOrder = [
+			{
+				job: 1,
+				priority: -4
+			},
+			{
+				job: 4,
+				priority: -4
+			},
+			{
+				job: 6,
+				priority: -3
+			},
+			{
+				job: 2,
+				priority: -1
+			},
+			{
+				job: 8,
+				priority: -1
+			},
+			{
+				job: 0,
+				priority: 0
+			},
+			{
+				job: 3,
+				priority: 1
+			},
+			{
+				job: 5,
+				priority: 1
+			},
+			{
+				job: 9,
+				priority: 1
+			},
+			{
+				job: 7,
+				priority: 2
+			}
+		];
+		const actualOrder = [];
+
+		const limiter = new Limiter({
+			concurrency: 0
+		});
+		const jobs = [
+			0,
+			-4,
+			-1,
+			1,
+			-4,
+			1,
+			-3,
+			2,
+			-1,
+			1
+		];
+		jobs.forEach((priority, id) => limiter.add(id, priority));
+		limiter.jobs.forEach((t) => {
+			actualOrder.push(t.value);
+		});
+		assert.strictEqual(jobs.length, limiter.jobs.length);
+		assert.deepStrictEqual(actualOrder, expectedOrder);
+	});
 });

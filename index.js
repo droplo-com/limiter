@@ -2,7 +2,7 @@
  * @author Michał Żaloudik <ponury.kostek@gmail.com>
  */
 "use strict";
-
+const Yadll = require("yadll");
 const kDone = Symbol("kDone");
 const kRun = Symbol("kRun");
 const kOnDone = Symbol("kOnDone");
@@ -19,8 +19,12 @@ class Limiter {
 	 * @param {function} [options.drain] Called each time queue is drain
 	 * @param {function} [options.done] Called each time job is done, job passed as
 	 */
-	constructor({concurrency, drain, done} = {}) {
-		if (concurrency !== undefined && (typeof concurrency !== "number" || isNaN(concurrency))) {
+	constructor({
+		concurrency,
+		drain,
+		done
+	} = {}) {
+		if (concurrency !== undefined && (typeof concurrency !== "number" || isNaN(concurrency) || concurrency < 0)) {
 			throw new TypeError("concurrency");
 		}
 		if (drain !== undefined && typeof drain !== "function") {
@@ -43,8 +47,8 @@ class Limiter {
 		};
 		this[kOnDrain] = drain;
 		this[kOnDone] = done;
-		this.concurrency = concurrency || Infinity;
-		this.jobs = [];
+		this.concurrency = concurrency ?? Infinity;
+		this.jobs = new Yadll();
 		this.pending = 0;
 	}
 
@@ -53,8 +57,41 @@ class Limiter {
 	 *
 	 * @public
 	 */
-	add(job) {
-		this.jobs.push(job);
+	add(job, priority = 0) {
+		const backward = priority >= 0;
+		let node = backward ? this.jobs.tail : this.jobs.head;
+		let inserted = false;
+		while (node !== null) {
+			if (backward) {
+				if (node.value.priority <= priority) {
+					this.jobs.insertAfter(node, {
+						job,
+						priority
+					});
+					inserted = true;
+					break;
+				}
+				node = node.prev;
+			} else {
+				if (node.value.priority > priority) {
+					this.jobs.insertBefore(node, {
+						job,
+						priority
+					});
+					inserted = true;
+					break;
+				}
+				node = node.next;
+			}
+
+		}
+		if (!inserted) {
+			this.jobs.push({
+				job,
+				priority
+			});
+
+		}
 		this[kRun]();
 	}
 
@@ -69,8 +106,7 @@ class Limiter {
 		}
 
 		if (this.jobs.length) {
-			const job = this.jobs.shift();
-
+			const {value: {job}} = this.jobs.shift();
 			this.pending++;
 			job(this[kDone]);
 		}
