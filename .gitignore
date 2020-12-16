@@ -1,7 +1,6 @@
+.*
 node_modules/
-.idea/
 typings/
-.vscode/
 doc/
 build/
 coverage/
